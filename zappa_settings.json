@@ -20,7 +20,7 @@
         "events": [
             {
                 "function": "app.scrape_mitula",
-                "expression": "cron(0 14 ? * THU *)"
+                "expression": "cron(0 14 ? * 5 *)"
             }
         ]
     }

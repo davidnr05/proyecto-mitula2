@@ -5,11 +5,11 @@ import datetime
 def scrape_mitula(event, context):
     print("Ejecutando scrape_mitula...")
 
-    base_url = "https://casas.mitula.com.co/find?operationType=sell&propertyType=mitula_studio_apartment&geoId=mitula-CO-poblacion-0000014156&text=Bogotá%2C++%28Cundinamarca%29"
+    base_url = "https://casas.mitula.com.co/find?operationType=sell&propertyType=mitula_studio_apartment&geoId=mitula-CO-poblacion-0000014156&text=Bogot%C3%A1%2C++%28Cundinamarca%29"
     
     fecha_hoy = datetime.datetime.now().strftime("%Y-%m-%d")
     s3 = boto3.client('s3')
-    bucket_name = "landing-casas-059"
+    bucket_name = "landing-casas-117"
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.56"

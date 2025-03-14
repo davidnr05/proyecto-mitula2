@@ -4,6 +4,8 @@ import datetime
 import json
 import re
 from bs4 import BeautifulSoup
+import bs4  # Asegurar que bs4 está disponible
+
 
 def process_html(file_key):
     s3 = boto3.client("s3")

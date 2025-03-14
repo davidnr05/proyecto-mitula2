@@ -3,10 +3,10 @@ name: CI/CD Mitula Scraper
 on:
   push:
     branches:
-      - main  # Se ejecutará en cada push a la rama "main"
+      - master  # Se ejecutará en cada push a la rama "main"
   pull_request:
     branches:
-      - main  # También se ejecutará en cada PR a "main"
+      - master  # También se ejecutará en cada PR a "main"
 
 jobs:
   lint:

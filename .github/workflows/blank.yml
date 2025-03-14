@@ -29,28 +29,25 @@ jobs:
         run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
   test:
-  name: Ejecutar Pruebas Unitarias
-  runs-on: ubuntu-latest
-  needs: lint
+    name: Ejecutar Pruebas Unitarias
+    runs-on: ubuntu-latest
+    needs: lint  # Se ejecuta después de la revisión de código
 
-  steps:
-    - name: Clonar el repositorio
-      uses: actions/checkout@v3
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v3
 
-    - name: Configurar Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
+      - name: Configurar Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
 
-    - name: Instalar dependencias
-      run: pip install -r requirements.txt pytest pytest-mock boto3 requests beautifulsoup4
-
-    - name: Verificar paquetes instalados
-      run: pip list
-
-    - name: Ejecutar pruebas unitarias con pytest
-      run: pytest test_scraper.py --maxfail=1 --disable-warnings
-
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt pytest pytest-mock boto3 requests beautifulsoup4
+      - name: Verificar paquetes instalados
+        run: pip list
+      - name: Ejecutar pruebas unitarias con pytest
+        run: pytest test_scraper.py --maxfail=1 --disable-warnings
 
   deploy:
     name: Desplegar en AWS con Zappa

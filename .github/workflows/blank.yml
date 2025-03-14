@@ -100,12 +100,15 @@ jobs:
       - name: Desplegar con Zappa (deploy si no existe, update si ya existe)
         run: |
           source venv/bin/activate
-          if [ "$EXISTS" == "true" ]; then
+          if zappa status dev | grep -q "ACTIVE"; then
+            echo "Aplicación ya desplegada, ejecutando update..."
             zappa update dev
           else
+            echo "Aplicación no encontrada, ejecutando deploy..."
             zappa deploy dev
           fi
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      

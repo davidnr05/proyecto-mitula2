@@ -1,60 +1,79 @@
-# This is a basic workflow to help you get started with Actions
+name: CI/CD Mitula Scraper
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "master" ]
+    branches:
+      - main  # Se ejecutará en cada push a la rama "main"
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - main  # También se ejecutará en cada PR a "main"
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  lint:
+    name: Revisión de Código con flake8
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - name: Clonar el repositorio
+        uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Configurar Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-      - name: List current directory
-        run: ls
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Instalar dependencias
+        run: pip install flake8
+
+      - name: Revisar código con flake8
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  test:
+    name: Ejecutar Pruebas Unitarias
+    runs-on: ubuntu-latest
+    needs: lint  # Se ejecuta después de la revisión de código
+
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v3
         with:
-           python-version: '3.x'
-      - name: Run tests
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pytest 
-          pip install pytest
-      - name: Configure AWS +-------------------------------------------------Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+          python-version: "3.10"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt pytest pytest-mock boto3 requests beautifulsoup4
+
+      - name: Ejecutar pruebas unitarias con pytest
+        run: pytest test_scraper.py --maxfail=1 --disable-warnings
+
+  deploy:
+    name: Desplegar en AWS con Zappa
+    runs-on: ubuntu-latest
+    needs: test  # Se ejecuta solo si las pruebas pasan
+
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v3
         with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-            aws-region: us-east-1
-            
-        name: Deploy to AWS Lambda with Zappa
+          python-version: "3.10"
+
+      - name: Instalar Zappa y dependencias
+        run: pip install -r requirements.txt zappa
+
+      - name: Configurar credenciales de AWS
         run: |
-          source venv/bin/activate
-          zappa update dev  
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id=$AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+
+      - name: Desplegar en AWS con Zappa
+        run: zappa update dev
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

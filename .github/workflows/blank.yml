@@ -68,9 +68,10 @@ jobs:
 
       - name: Configurar credenciales de AWS
         run: |
+          mkdir -p ~/.aws  # 🔹 Asegura que el directorio existe
           echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id=$AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
-          echo "aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
+          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
 
       - name: Desplegar en AWS con Zappa
         run: zappa update dev

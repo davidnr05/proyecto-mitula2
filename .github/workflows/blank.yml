@@ -97,20 +97,11 @@ jobs:
             echo "EXISTS=false" >> $GITHUB_ENV
           fi
 
-      - name: Desplegar con Zappa (deploy si no existe, update si ya existe)
+      - name: Desplegar con Zappa (solo update)
         run: |
           source venv/bin/activate
-          FUNCTION_NAME="proyecto-mitula-dev"
-          REGION="us-east-1"
-
-          # Verificar si la función Lambda ya existe
-          if aws lambda get-function --function-name $FUNCTION_NAME --region $REGION > /dev/null 2>&1; then
-            echo "Aplicación ya desplegada, ejecutando update..."
-            zappa update dev
-          else
-            echo "Aplicación no encontrada, ejecutando deploy..."
-            zappa deploy dev
-          fi
+          echo "Ejecutando zappa update..."
+          zappa update dev
 
 
     env:

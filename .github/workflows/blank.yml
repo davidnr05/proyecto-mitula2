@@ -80,10 +80,24 @@ jobs:
           echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
           echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
 
-      - name: Desplegar en AWS con Zappa
+      - name: Verificar si la función Lambda ya existe
+        id: check_lambda
         run: |
           source venv/bin/activate
-          zappa update dev
+          if aws lambda get-function --function-name proyecto-mitula-dev --region us-east-1; then
+            echo "EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Desplegar con Zappa (deploy si no existe, update si ya existe)
+        run: |
+          source venv/bin/activate
+          if [ "$EXISTS" == "true" ]; then
+            zappa update dev
+          else
+            zappa deploy dev
+          fi
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

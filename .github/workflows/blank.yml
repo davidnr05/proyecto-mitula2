@@ -100,7 +100,11 @@ jobs:
       - name: Desplegar con Zappa (deploy si no existe, update si ya existe)
         run: |
           source venv/bin/activate
-          if zappa status dev 2>&1 | grep -q "ACTIVE\|deployed"; then
+          FUNCTION_NAME="proyecto-mitula-dev"
+          REGION="us-east-1"
+
+          # Verificar si la función Lambda ya existe
+          if aws lambda get-function --function-name $FUNCTION_NAME --region $REGION > /dev/null 2>&1; then
             echo "Aplicación ya desplegada, ejecutando update..."
             zappa update dev
           else

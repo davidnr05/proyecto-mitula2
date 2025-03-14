@@ -1,6 +1,6 @@
 {
     "dev": {
-        "app_function": "app.scrape_mitula",
+        "app_function": "app.lambda_handler",
         "aws_region": "us-east-1",
         "exclude": [
             "boto3",
@@ -19,18 +19,37 @@
         "role_name": "LabRole",
         "events": [
             {
-                "function": "app.scrape_mitula",
-                "expression": "cron(0 14 ? * 5 *)"
+                "function": "app.lambda_handler",
+                "expression": "cron(0 9 ? * 2 *)"
+            }
+        ]
+    },
+    "procesar": {
+        "app_function": "procesar_html.lambda_handler",
+        "aws_region": "us-east-1",
+        "exclude": [
+            "boto3",
+            "dateutil",
+            "botocore",
+            "s3transfer",
+            "concurrent"
+        ],
+        "profile_name": "default",
+        "project_name": "procesar-mitula",
+        "runtime": "python3.10",
+        "s3_bucket": "landing-casas-117",
+        "keep_warm": false,
+        "apigateway_enabled": false,
+        "manage_roles": false,
+        "role_name": "LabRole",
+        "events": [
+            {
+                "function": "procesar_html.lambda_handler",
+                "event_source": {
+                    "arn": "arn:aws:s3:::landing-casas-117",
+                    "events": ["s3:ObjectCreated:*"]
+                }
             }
         ]
     }
 }
-
-
-
-
-
-
-
-
-

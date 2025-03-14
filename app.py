@@ -2,41 +2,36 @@ import boto3
 import requests
 import datetime
 
-def scrape_mitula(event, context):
-    print("Ejecutando scrape_mitula...")
-
-    base_url = "https://casas.mitula.com.co/find?operationType=sell&propertyType=mitula_studio_apartment&geoId=mitula-CO-poblacion-0000014156&text=Bogot%C3%A1%2C++%28Cundinamarca%29"
-    
-    fecha_hoy = datetime.datetime.now().strftime("%Y-%m-%d")
+def download_html_pages():
     s3 = boto3.client('s3')
     bucket_name = "landing-casas-117"
+    base_url = "https://casas.mitula.com.co/find?operationType=sell&propertyType=mitula_studio_apartment&geoId=mitula-CO-poblacion-0000014156&text=Bogot%C3%A1%2C++%28Cundinamarca%29"
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36 Edg/98.0.1108.56"
-    }
+    today = datetime.datetime.today().strftime('%Y-%m-%d')
 
-    for page in range(1, 11):
-        url = f"{base_url}&page={page}"
-        print(f"Descargando: {url}")
+    for i in range(1, 11):  # Descargar las primeras 10 páginas
+        if i == 1:
+            url = base_url  # Primera página sin `page=`
+        else:
+            url = f"{base_url}&page={i}"  # Agregar el número de página a la URL
 
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
 
         if response.status_code == 200:
-            file_name = f"{fecha_hoy}-p{page}.html"
+            file_name = f"{today}-{i}.html"
             file_path = f"/tmp/{file_name}"
 
-            with open(file_path, "w", encoding="utf-8") as f:
+            with open(file_path, "w", encoding='utf-8') as f:
                 f.write(response.text)
 
-            print(f"Subiendo {file_name} a S3...")
-
             try:
-                s3.upload_file(file_path, bucket_name, f"{fecha_hoy}/{file_name}")
-                print(f"✅ Guardado en S3: {bucket_name}/{fecha_hoy}/{file_name}")
+                s3.upload_file(file_path, bucket_name, file_name)
+                print(f"Subido {file_name} a {bucket_name}")
             except Exception as e:
-                print(f"❌ Error al subir {file_name} a S3: {e}")
-
+                print(f"Error al subir {file_name}: {e}")
         else:
-            print(f"❌ Error {response.status_code} al descargar {url}")
+            print(f"Error al descargar {url}: {response.status_code}")
 
-    return {"status": "OK"}
+def lambda_handler(event, context):
+    download_html_pages()
+    return {"statusCode": 200, "body": "Descarga completada y subida a S3"}

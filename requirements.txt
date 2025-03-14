@@ -1,4 +1,5 @@
-zappa
 boto3
 requests
-pytest
+lxml
+pandas
+beautifulsoup4
